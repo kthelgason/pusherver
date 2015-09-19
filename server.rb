@@ -15,7 +15,7 @@ end
 
 post '/message' do
   settings.connections.each do |sock|
-    sock << JSON.parse(request.body.read)
+    sock << "data: #{request.body.read}\n\n"
   end
   201
 end
