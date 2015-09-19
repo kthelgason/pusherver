@@ -5,15 +5,22 @@
   </head>
   <body>
     <h1>Simple Echo & Chat Server</h1>
-    <table class="pure-table">
-      <thead>
-      <tr><th>Message:</th></tr>
-      </thead>
-      <tbody>
-        <% messages.each do |m| %>
-          <tr><td><%= m["text"] %></td></tr>
-        <% end %>
-      </tbody>
-    </table>
+    <div>
+      <table class="pure-table" id="chat">
+        <thead>
+        <tr><th>Message:</th></tr>
+        </thead>
+        <tbody>
+          <% messages.each do |m| %>
+            <tr><td><%= m["text"] %></td></tr>
+          <% end %>
+        </tbody>
+      </table>
+      <form class="pure-form">
+        <fieldset>
+          <input id='post' placeholder='type message here...' />
+        </fieldset>
+      </form>
+    <div>
   </body>
 </html>
