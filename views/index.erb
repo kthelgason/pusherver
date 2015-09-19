@@ -1,13 +1,19 @@
 <!doctype html>
 <html>
-  <head></head>
+  <head>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+  </head>
   <body>
     <h1>Simple Echo & Chat Server</h1>
-    <table>
-      <th><tr>Message:</tr></th>
-      <% messages.each do |m| %>
-        <td><tr><%= m["text"] %></tr></td>
-      <% end %>
+    <table class="pure-table">
+      <thead>
+      <tr><th>Message:</th></tr>
+      </thead>
+      <tbody>
+        <% messages.each do |m| %>
+          <tr><td><%= m["text"] %></td></tr>
+        <% end %>
+      </tbody>
     </table>
   </body>
 </html>
