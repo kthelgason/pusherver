@@ -14,8 +14,9 @@ get '/' do
 end
 
 post '/message' do
+  text = request.body.read
   settings.connections.each do |sock|
-    sock << "data: #{request.body.read}\n\n"
+    sock << "data: #{text}\n\n"
   end
   201
 end
