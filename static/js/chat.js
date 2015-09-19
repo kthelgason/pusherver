@@ -1,15 +1,10 @@
 
 function bindEventSource () {
     var es = new EventSource('/stream');
-    var chat = document.getElementById("chat");
+    var chatMessages = document.getElementById("chat").children[1];
     es.onmessage = function (evt) {
-        console.log(evt.data);
+      chatMessages.innerHTML += "<tr><td>" + evt.data + "</td></tr>";
     };
-
-    es.onopen = function () {
-      console.log("Opened new connection to server");
-    };
-
     es.onerror = function (err) {
       console.error("Error occured:", err);
     };
