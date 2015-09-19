@@ -3,5 +3,11 @@
   <head></head>
   <body>
     <h1>Simple Echo & Chat Server</h1>
+    <table>
+      <th><tr>Message:</tr></th>
+      <% messages.each do |m| %>
+        <td><tr><%= m["text"] %></tr></td>
+      <% end %>
+    </table>
   </body>
 </html>
