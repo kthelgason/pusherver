@@ -2,18 +2,42 @@
 require 'rubygems'
 require 'date'
 require 'eventmachine'
+require 'erb'
 
 CRLF = "\r\n"
 PORT = 4444
 STATICDIR = "static"
 
 def hello
-  return "Hello world!"
+  render_template "views/index.erb", {messages: []}
 end
 
 request_handlers = {
   "/" => method(:hello)
 }
+
+class StaticFile
+  CONTENT_TYPES = {
+    "js" => "application/javascript",
+    "html" => "text/html",
+    "css" => "text/css"
+  }
+  def initialize(filename)
+    @filename = filename
+    @extention = filename.split('.').last
+  end
+
+  def read
+    File.open @filename, "r" do |f|
+      f.read
+    end
+  end
+
+  def content_type
+    CONTENT_TYPES.fetch(@extention, "text/plain")
+  end
+end
+
 
 class SimpleHandler < EM::P::HeaderAndContentProtocol
   attr_accessor :handlers
@@ -22,15 +46,14 @@ class SimpleHandler < EM::P::HeaderAndContentProtocol
     parse_req_line headers.first
     puts "#{DateTime.now}\t#{@method} #{@uri}"
     begin
-      handler = @handlers.fetch @uri
-      send_response(200, "OK", handler.call)
+      content, content_type = @handlers.fetch(@uri).call
+      send_response(200, "OK", content, content_type: content_type)
     rescue KeyError
       # No handler, try serving from static dir
       full_path = STATICDIR + @uri
       if File.exist? full_path
-        File.open full_path, "r" do |f|
-          send_response(200, "OK", f.read)
-        end
+        file = StaticFile.new full_path
+        send_response(200, "OK", file.read, content_type: file.content_type)
       else
         # Resource not found
         send_response(404, "Not Found")
@@ -46,6 +69,7 @@ class SimpleHandler < EM::P::HeaderAndContentProtocol
 
   def send_response(code, text, response="", content_type: "text/plain")
     send_data "HTTP/1.1 #{code} #{text}#{CRLF}" +
+              "Server: Pusherver 0.0.2#{CRLF}" +
               "Content-type: #{content_type}#{CRLF}" +
               "Connection: close#{CRLF}" +
               "Content-length: #{response.bytesize + 2}#{CRLF}" +
@@ -54,6 +78,17 @@ class SimpleHandler < EM::P::HeaderAndContentProtocol
   end
 end
 
+def render_template(tmpl, mapping)
+  page = ""
+  b = binding
+  mapping.each do |k,v|
+    b.local_variable_set(k, v)
+  end
+  File.open tmpl, "r" do |f|
+    page = ERB.new(f.read()).result(b)
+  end
+  return page, "text/html"
+end
 
 EventMachine.run do
   EventMachine::start_server '0.0.0.0', PORT, SimpleHandler do |conn|
