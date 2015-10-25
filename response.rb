@@ -48,10 +48,16 @@ class HttpResponse
     @headers.each do |k,v|
       string << "#{k}: #{v}\r\n"
     end
-    string << "Content-length: #{@content.bytesize + 2}\r\n"
+    if not @headers["Transfer-encoding"]
+      string << "Content-length: #{@content.bytesize + 2}\r\n"
+    end
     string << "\r\n"
     string << @content
     string << "\r\n"
+  end
+
+  def stream_headers
+    self.to_s.split("\r\n").take_while { |l| l !~ /Content-length/ }.join("\r\n") + "\r\n\r\n"
   end
 
 end
