@@ -5,7 +5,6 @@ require 'erb'
 class HttpResponse
   attr_accessor :status, :status_string, :content, :headers
 
-  STATICDIR = "static"
   CONTENT_TYPES = {
     "js" => "application/javascript",
     "html" => "text/html",
@@ -30,7 +29,7 @@ class HttpResponse
     end
     @headers["Content-type"] = "text/html"
   end
-  
+
   def serve_static(filename)
     ext = filename.split('.').last
     File.open filename, "r" do |f|

@@ -7,12 +7,21 @@ require './response'
 PORT = 4444
 STATICDIR = "static"
 
-def hello(response)
-  response.render_template "views/index.erb", {messages: []}
+$messages = []
+
+def hello(req, res)
+  res.render_template "views/index.erb", {messages: $messages}
+end
+
+def message(req, res)
+  $messages << {text: req}
+  res.status = 201
+  res.status_string = "Created"
 end
 
 request_handlers = {
-  "/" => method(:hello)
+  "/" => method(:hello),
+  "/message" => method(:message)
 }
 
 class SimpleHandler < EM::P::HeaderAndContentProtocol
@@ -24,7 +33,7 @@ class SimpleHandler < EM::P::HeaderAndContentProtocol
     puts "#{DateTime.now}\t#{@method} #{@uri}"
     response = HttpResponse.new
     begin
-      @handlers.fetch(@uri).call(response)
+      @handlers.fetch(@uri).call(content, response)
       send_response(response)
     rescue KeyError
       # No handler, try serving from static dir
