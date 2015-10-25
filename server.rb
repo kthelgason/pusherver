@@ -1,30 +1,27 @@
 # coding: utf-8
-require 'sinatra'
-require 'json'
+require 'rubygems'
+require 'eventmachine'
 
-set server: 'thin', connections: []
-
-set :public_folder, File.dirname(__FILE__) + '/static'
-
-messages = []
+CRLF = "\r\n"
+PORT = 4444
 
 
-get '/' do
-  erb :index, :locals => { messages: messages }
-end
-
-post '/message' do
-  text = request.body.read
-  settings.connections.each do |sock|
-    sock << "data: #{text}\n\n"
+class SimpleHandler < EM::P::HeaderAndContentProtocol
+  def receive_request(headers, content)
+    @headers = headers_2_hash headers
+    parse_req_line headers.first
+    puts @uri
   end
-  201
-end
 
-get '/stream', provides: 'text/event-stream' do
-  stream :keep_open do |sock|
-    settings.connections << sock
-    sock.callback { settings.connections.delete sock }
+  def parse_req_line(line)
+    parsed = line.split(' ')
+    @method, uri, _ = parsed
+    @uri, @query = uri.split('?')
   end
 end
 
+
+EventMachine.run do
+  EventMachine::start_server '0.0.0.0', PORT, SimpleHandler
+  puts "Listening on port #{PORT}."
+end
